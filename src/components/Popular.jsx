@@ -10,17 +10,30 @@ function Popular() {
     getPopular();
   }, []);
 
+  const isJson = (str) => {
+    try {
+      JSON.parse(str);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  };
+
   const getPopular = async () => {
+    const check = localStorage.getItem("popular");
 
+    if (check && isJson(check)) {
+      setPopular(JSON.parse(check));
+    } else {
+      const api = await fetch(
+        `https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API_KEY2}&number=9`
+      );
+      const data = await api.json();
 
-    
-    const api = await fetch(
-      `https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API_KEY}&number=9`
-    );
-    const data = await api.json();
-
-    setPopular(data.recipes);
-    console.log(data.recipes);
+      localStorage.setItem("popular", JSON.stringify(data.recipes));
+      setPopular(data.recipes);
+      console.log(data.recipes);
+    }
   };
 
   return (
@@ -28,20 +41,22 @@ function Popular() {
       <Wrapper>
         <h3>Popular Picks</h3>
 
-        <Splide options={{
+        <Splide
+          options={{
             perPage: 4,
             arrows: false,
             pagination: false,
             drag: "free",
-            gap: "5rem"
-        }}>
-          {popular.map((recipe) => {
+            gap: "5rem",
+          }}
+        >
+          {popular?.map((recipe) => {
             return (
               <SplideSlide key={recipe.id}>
                 <Card>
                   <p>{recipe.title}</p>
                   <img src={recipe.image} alt={recipe.title} />
-                  <Gradient/>
+                  <Gradient />
                 </Card>
               </SplideSlide>
             );
@@ -69,7 +84,7 @@ const Card = styled.div`
     height: 100%;
     object-fit: cover;
   }
-  p{
+  p {
     position: absolute;
     z-index: 10;
     left: 50%;
@@ -84,7 +99,7 @@ const Card = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-  }  
+  }
 `;
 
 const Gradient = styled.div`
@@ -92,7 +107,7 @@ const Gradient = styled.div`
   position: absolute;
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.5));
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 `;
 
 export default Popular;
